@@ -1,0 +1,7 @@
+albumentations
+PIL
+torch
+tqdm
+torchvision
+numpy
+os

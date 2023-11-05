@@ -3,10 +3,15 @@ from PIL import Image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
+#####################
+# Start of user settings
+#####################
+
 LOAD_MODEL = False
 SAVE_MODEL = True
-CHECKPOINT_GEN = "gen.pth.tar"
-CHECKPOINT_DISC = "disc.pth.tar"
+INPUT_DIR = "data_copy"
+CHECKPOINT_GEN = "checkpoints/gen.pth.tar"
+CHECKPOINT_DISC = "checkpoints/disc.pth.tar"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 200
@@ -15,6 +20,21 @@ NUM_WORKERS = 4
 HIGH_RES = 96
 LOW_RES = HIGH_RES // 4
 IMG_CHANNELS = 3
+
+
+TEST_DIR = "test/inp/"
+TEST_OUT_DIR = "test/out/"
+
+## Tensorboard implementation
+USE_TENSORBOARD = True
+TB_LOG_DIR = "runs/mnist/run2"
+
+#####################
+# End of user settings
+#####################
+
+
+
 
 highres_transform = A.Compose(
     [

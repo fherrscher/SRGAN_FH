@@ -12,7 +12,13 @@ from dataset import MyImageFolder
 torch.backends.cudnn.benchmark = True
 
 
-def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
+if config.USE_TENSORBOARD:
+    from torch.utils.tensorboard import SummaryWriter
+    writer = SummaryWriter(config.TB_LOG_DIR)
+
+
+
+def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, epoch):
     loop = tqdm(loader, leave=True)
 
     for idx, (low_res, high_res) in enumerate(loop):
@@ -40,16 +46,29 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss):
         loss_for_vgg = 0.006 * vgg_loss(fake, high_res)
         gen_loss = loss_for_vgg + adversarial_loss
 
+
         opt_gen.zero_grad()
         gen_loss.backward()
         opt_gen.step()
 
-        if idx % 100 == 0:
-            plot_examples("test_images/", gen)
+    if config.USE_TENSORBOARD:
+        writer.add_scalar('Adv_Loss', adversarial_loss.item(), global_step=epoch)
+        writer.add_scalar('VGG_Loss', loss_for_vgg.item(), global_step=epoch)
+        writer.add_scalar('Disc_Loss_Real', disc_loss_real.item(), global_step=epoch)
+        writer.add_scalar('Disc_Loss_Fake', disc_loss_fake.item(), global_step=epoch)
+        writer.add_scalar('Disc_Loss', loss_disc.item(), global_step=epoch)
+        writer.add_scalar('Gen_Loss', gen_loss.item(), global_step=epoch)
+
+
+
+        #writer.flush()
+        # print("MSE: ", gen_loss_item)
+        # print(epoch)
+
 
 
 def main():
-    dataset = MyImageFolder(root_dir="data/")
+    dataset = MyImageFolder(root_dir=config.INPUT_DIR)
     loader = DataLoader(
         dataset,
         batch_size=config.BATCH_SIZE,
@@ -77,29 +96,29 @@ def main():
         )
 
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss)
-
+        train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, epoch)
+        
         if config.SAVE_MODEL:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
             save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
 
 def test():
-    dataset = MyImageFolder(root_dir="input/")
-    loader = DataLoader(
-        dataset,
-        batch_size=config.BATCH_SIZE,
-        shuffle=True,
-        pin_memory=True,
-        num_workers=config.NUM_WORKERS,
-    )
+    # dataset = MyImageFolder(root_dir="input/")
+    # loader = DataLoader(
+    #     dataset,
+    #     batch_size=config.BATCH_SIZE,
+    #     shuffle=True,
+    #     pin_memory=True,
+    #     num_workers=config.NUM_WORKERS,
+    # )
     gen = Generator(in_channels=3).to(config.DEVICE)
     disc = Discriminator(in_channels=3).to(config.DEVICE)
     opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
     opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
-    mse = nn.MSELoss()
-    bce = nn.BCEWithLogitsLoss()
-    vgg_loss = VGGLoss()
+    # mse = nn.MSELoss()
+    # bce = nn.BCEWithLogitsLoss()
+    # vgg_loss = VGGLoss()
 
     
     load_checkpoint(
@@ -113,7 +132,9 @@ def test():
     )
 
 
-    plot_examples(low_res_folder="input/inp", gen=gen)
+    plot_examples(low_res_folder=config.TEST_DIR, gen=gen)
+
+
 
 
 
