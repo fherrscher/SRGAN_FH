@@ -22,7 +22,6 @@ HIGH_RES = 96
 LOW_RES = HIGH_RES // 4 # Set the upscaling factor
 IMG_CHANNELS = 3
 
-
 USE_TENSORBOARD = True # Set to True to use tensorboard
 TB_LOG_DIR = "runs/mnist/local_4" # Tensorboard log dir
 PLOT_EPOCHS = 10 # Every X epochs plot the examples

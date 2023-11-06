@@ -58,7 +58,6 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, epoch):
         writer.add_scalar('Disc_Loss_Fake', disc_loss_fake.item(), global_step=epoch)
         writer.add_scalar('Disc_Loss', loss_disc.item(), global_step=epoch)
         writer.add_scalar('Gen_Loss', gen_loss.item(), global_step=epoch)
-        print(plot_tensorboard(gen).shape)
         if epoch % config.PLOT_EPOCHS == 0:
             writer.add_image('Image Plot', plot_tensorboard(gen), global_step=epoch, dataformats='NCHW')
         writer.flush()
@@ -102,14 +101,11 @@ def main():
         total_epoch = epoch_count + epoch + 1
         print("Epoch: ", total_epoch)
         train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, total_epoch)
-        #print(plot_tensorboard(gen))
 
-        # if config.SAVE_MODEL:
-        #     save_checkpoint(gen, opt_gen, total_epoch, filename=config.CHECKPOINT_GEN)
-        #     save_checkpoint(disc, opt_disc, total_epoch, filename=config.CHECKPOINT_DISC)
+        if config.SAVE_MODEL:
+            save_checkpoint(gen, opt_gen, total_epoch, filename=config.CHECKPOINT_GEN)
+            save_checkpoint(disc, opt_disc, total_epoch, filename=config.CHECKPOINT_DISC)
 
-        # if config.PLOT_EXAMPLES and total_epoch % config.PLOT_EPOCHS == 0:
-        #     plot_examples(low_res_folder=config.TEST_DIR, gen=gen, epoch=total_epoch)
 
 
 
