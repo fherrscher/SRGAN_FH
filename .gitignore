@@ -2,3 +2,4 @@
 **/*.jpg
 **/*.tar
 runs/
+__pycache__/

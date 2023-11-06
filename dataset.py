@@ -30,14 +30,14 @@ class MyImageFolder(Dataset):
         return low_res, high_res
 
 
-# def test():
-#     dataset = MyImageFolder(root_dir="new_data/")
-#     loader = DataLoader(dataset, batch_size=1, num_workers=8)
+def test():
+    dataset = MyImageFolder(root_dir="new_data/")
+    loader = DataLoader(dataset, batch_size=1, num_workers=8)
 
-#     for low_res, high_res in loader:
-#         print(low_res.shape)
-#         print(high_res.shape)
+    for low_res, high_res in loader:
+        print(low_res.shape)
+        print(high_res.shape)
 
 
-# if __name__ == "__main__":
-#     test()
+if __name__ == "__main__":
+    test()

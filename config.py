@@ -7,27 +7,29 @@ from albumentations.pytorch import ToTensorV2
 # Start of user settings
 #####################
 
-LOAD_MODEL = False
-SAVE_MODEL = True
-INPUT_DIR = "data_copy"
-CHECKPOINT_GEN = "checkpoints/gen.pth.tar"
-CHECKPOINT_DISC = "checkpoints/disc.pth.tar"
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+LOAD_MODEL = False # Set to True to load the model from checkpoint and continue training
+SAVE_MODEL = False # Set to True to save the model every epoch
+INPUT_DIR = "data_copy" # Input directory (img data has to be in a subdirectory, e.g. data/img/)
+CHECKPOINT_GEN = "checkpoints/gen.pth.tar" # Generator checkpoint file
+CHECKPOINT_DISC = "checkpoints/disc.pth.tar" # Discriminator checkpoint file
+# DEVICE = "cuda" if torch.cuda.is_available() else "cpu" # Use GPU if available
+DEVICE = "cpu"
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 200
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 NUM_WORKERS = 4
 HIGH_RES = 96
-LOW_RES = HIGH_RES // 4
+LOW_RES = HIGH_RES // 4 # Set the upscaling factor
 IMG_CHANNELS = 3
 
 
-TEST_DIR = "test/inp/"
-TEST_OUT_DIR = "test/out/"
+USE_TENSORBOARD = True # Set to True to use tensorboard
+TB_LOG_DIR = "runs/mnist/local_4" # Tensorboard log dir
+PLOT_EPOCHS = 10 # Every X epochs plot the examples
+EXAMPLE_IMAGE = "test/inp/input.jpg" # Example image for Tensorboard
 
-## Tensorboard implementation
-USE_TENSORBOARD = True
-TB_LOG_DIR = "runs/mnist/run2"
+TEST_DIR = "test/inp/" # Test directory (input images)
+TEST_OUT_DIR = "test/out/" # Test directory (output images)
 
 #####################
 # End of user settings

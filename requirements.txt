@@ -1,7 +1,6 @@
 albumentations
-PIL
+Pillow
 torch
 tqdm
 torchvision
 numpy
-os

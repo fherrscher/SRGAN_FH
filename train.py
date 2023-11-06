@@ -2,7 +2,7 @@ import torch
 import config
 from torch import nn
 from torch import optim
-from utils import load_checkpoint, save_checkpoint, plot_examples
+from utils import load_checkpoint, save_checkpoint, plot_examples, plot_tensorboard, load_epoch
 from loss import VGGLoss
 from torch.utils.data import DataLoader
 from model import Generator, Discriminator
@@ -58,12 +58,10 @@ def train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, epoch):
         writer.add_scalar('Disc_Loss_Fake', disc_loss_fake.item(), global_step=epoch)
         writer.add_scalar('Disc_Loss', loss_disc.item(), global_step=epoch)
         writer.add_scalar('Gen_Loss', gen_loss.item(), global_step=epoch)
-
-
-
-        #writer.flush()
-        # print("MSE: ", gen_loss_item)
-        # print(epoch)
+        print(plot_tensorboard(gen).shape)
+        if epoch % config.PLOT_EPOCHS == 0:
+            writer.add_image('Image Plot', plot_tensorboard(gen), global_step=epoch, dataformats='NCHW')
+        writer.flush()
 
 
 
@@ -84,6 +82,8 @@ def main():
     bce = nn.BCEWithLogitsLoss()
     vgg_loss = VGGLoss()
 
+    epoch_count = 0
+
     if config.LOAD_MODEL:
         load_checkpoint(
             config.CHECKPOINT_GEN,
@@ -94,64 +94,24 @@ def main():
         load_checkpoint(
            config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
+        epoch_count = load_epoch(config.CHECKPOINT_GEN, epoch_count)
+        print("Modell successfully loaded with epoch: ", epoch_count)
+        
 
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, epoch)
-        
-        if config.SAVE_MODEL:
-            save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
-            save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
+        total_epoch = epoch_count + epoch + 1
+        print("Epoch: ", total_epoch)
+        train_fn(loader, disc, gen, opt_gen, opt_disc, mse, bce, vgg_loss, total_epoch)
+        #print(plot_tensorboard(gen))
 
+        # if config.SAVE_MODEL:
+        #     save_checkpoint(gen, opt_gen, total_epoch, filename=config.CHECKPOINT_GEN)
+        #     save_checkpoint(disc, opt_disc, total_epoch, filename=config.CHECKPOINT_DISC)
 
-def test():
-    # dataset = MyImageFolder(root_dir="input/")
-    # loader = DataLoader(
-    #     dataset,
-    #     batch_size=config.BATCH_SIZE,
-    #     shuffle=True,
-    #     pin_memory=True,
-    #     num_workers=config.NUM_WORKERS,
-    # )
-    gen = Generator(in_channels=3).to(config.DEVICE)
-    disc = Discriminator(in_channels=3).to(config.DEVICE)
-    opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
-    opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.9, 0.999))
-    # mse = nn.MSELoss()
-    # bce = nn.BCEWithLogitsLoss()
-    # vgg_loss = VGGLoss()
-
-    
-    load_checkpoint(
-        config.CHECKPOINT_GEN,
-        gen,
-        opt_gen,
-        config.LEARNING_RATE,
-    )
-    load_checkpoint(
-        config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
-    )
-
-
-    plot_examples(low_res_folder=config.TEST_DIR, gen=gen)
-
-
-
-
+        # if config.PLOT_EXAMPLES and total_epoch % config.PLOT_EPOCHS == 0:
+        #     plot_examples(low_res_folder=config.TEST_DIR, gen=gen, epoch=total_epoch)
 
 
 
 if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--mode', type=str, default='train', help='train, test')
-
-    args = parser.parse_args()
-
-    if args.mode == 'train':
-        main()
-    elif args.mode == 'test':
-        test()
-    else:
-        raise Exception("Unknow --mode")
+    main()
